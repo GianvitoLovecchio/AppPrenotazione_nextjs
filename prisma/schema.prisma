@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String
+  surname  String
+  role     String
+  password String
+  businesses Business[]
+  createdAt DateTime @default(now())
+}
+
+model Business {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  piva        String    @unique
+  description String
+  category    String
+  city        String
+  address     String
+  phone       String
+  website     String
+  email       String?
+  logo        String?
+  ownerId     Int
+  owner       User      @relation(fields: [ownerId], references: [id])
+  services    Service[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+
+  model Service {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float     // prezzo del servizio
+  duration      Int         // durata in minuti
+  businessId    Int
+  business      Business     @relation(fields: [businessId], references: [id])
+  availableFrom DateTime?    // orario di inizio disponibilità giornaliera
+  availableTo   DateTime?    // orario di fine disponibilità giornaliera
+  isActive      Boolean      @default(true) // se il servizio è attivo o disattivato
+  maxClients    Int?         // numero massimo di clienti per slot
+  category      String?      // sottocategoria del servizio (es. taglio, piega, colore)
+}
+
+
+
+
