@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function HomeClient({ initialUser, messageRedirect, messageSuccess }) {
   const [user] = useState(initialUser);
+  const searchParams = useSearchParams();
+  const message = searchParams.get("message");
 
   return (
     <div className="p-8">
@@ -13,6 +16,11 @@ export default function HomeClient({ initialUser, messageRedirect, messageSucces
       {messageRedirect && (
         <div className="flex justify-between w-3/5 rounded-md border border-blue-500 bg-blue-100 text-blue-700 px-4 py-2 mb-4 mx-auto">
           <div className="text-md py-1" role="alert">{messageRedirect}</div>
+        </div>
+      )}
+      {message === "not_owner" && (
+        <div className="flex justify-between w-3/5 rounded-md border border-blue-500 bg-blue-100 text-blue-700 px-4 py-2 mb-4 mx-auto">
+          <div className="text-md py-1" role="alert">Pagina accessibile solo ai proprietari.</div>
         </div>
       )}
 

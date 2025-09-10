@@ -4,8 +4,13 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function RegisterService() {
+
     const serviceDurations = [{ value: "15", text: "15 min." }, { value: "30", text: "30 min." }, { value: "45", text: "45 min." }, { value: "60", text: "1 ora" }, { value: "75", text: "1 ora e 15 min" }, { value: "90", text: "1 ora e 30 min." }, { value: "105", text: "1 ora e 45 min." }, { value: "120", text: "2 ore" }, { value: "135", text: "2 ore e 15 min." }, { value: "150", text: "2 ore e 30 min." }, { value: "165", text: "2 ore e 45 min." }, { value: "180", text: "3 ore" }];
+
     const [errors, setErrors] = useState({});
+
+    const [serviceList, setServiceList] = useState([]);
+
     const [businesses, setBusinesses] = useState([]);
     const [categories, setCategories] = useState([]);
     const [businessId, setBusinessId] = useState("");
@@ -20,8 +25,20 @@ export default function RegisterService() {
     const searchParams = useSearchParams();
     const [success, setSuccess] = useState(searchParams.get("success"));
 
+    function normalizeName(str) {
+        if (!str) return "";
+        return str
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, ""); // spazi multipli → 1 spazio
+    }
+
     const validate = () => {
         const newErrors = {};
+
+        const finalName = normalizeName(name);
+
+       console.log(serviceList);
 
         if (!category && !addNewCategory) newErrors.category = "Seleziona una categoria o aggiungi nuova";
         if (addNewCategory && !newCategory) newErrors.newCategory = "Inserisci il nome della nuova categoria";
@@ -33,6 +50,7 @@ export default function RegisterService() {
         if (!name) newErrors.name = "Il nome e' obbligatorio";
         else if (name.length > 50) newErrors.name = "Il nome deve essere di massimo 50 caratteri";
         else if (name.length < 3) newErrors.name = "Il nome deve essere di almeno 3 caratteri";
+        else if(serviceList.find(item => item === finalName)) newErrors.name = "E' già presente un servizio con questo nome nell'attività selezionata.";
 
         if (!description) newErrors.description = "La descrizione e' obbligatoria";
         else if (description.length > 500) newErrors.description = "La descrizione deve essere di massimo 500 caratteri";
@@ -89,8 +107,6 @@ export default function RegisterService() {
         } catch (error) {
             console.error(error);
         }
-
-
     }
 
     // fetch per ottenere tutti gli utenti dal db
@@ -113,9 +129,20 @@ export default function RegisterService() {
         if (!businessId) return;
         //[setta l'errore da mostraare]
 
-        fetch(`/api/auth/serviceCatecoryOfBusiness?businessId=${businessId}`)
+        fetch(`/api/auth/serviceCategoryOfBusiness?businessId=${businessId}`)
             .then(res => res.json())
             .then(data => setCategories((data.map(c => c.category))))
+            .catch(err => console.error(err));
+    }, [businessId]);
+
+
+    useEffect(() => {
+        if (!businessId) return;
+        //[setta l'errore da mostraare]
+
+        fetch(`/api/auth/serviceNameOfBusiness?businessId=${businessId}`)
+            .then(res => res.json())
+            .then(data => setServiceList(data))
             .catch(err => console.error(err));
     }, [businessId]);
 
@@ -124,11 +151,11 @@ export default function RegisterService() {
         <div>
             <h1 className="text-5xl text-center my-8 font-light">Registrazione Servizio</h1>
 
-            {success && 
-            <div className="flex justify-between w-3/5 rounded-md border border-green-500 bg-green-100 text-green-700 font-semibold px-4 py-2 mb-4 mx-auto">
-                <div className="text-md py-1" role="alert">Servizio registrato con successo!</div>
-                <button onClick={() => setSuccess(false)} className="cursor-pointer text-2xl font-bold">x</button>
-            </div>
+            {success &&
+                <div className="flex justify-between w-3/5 rounded-md border border-green-500 bg-green-100 text-green-700 font-semibold px-4 py-2 mb-4 mx-auto">
+                    <div className="text-md py-1" role="alert">Servizio registrato con successo!</div>
+                    <button onClick={() => setSuccess(false)} className="cursor-pointer text-2xl font-bold">x</button>
+                </div>
             }
             <div className="w-1/2 mx-auto">
                 <form onSubmit={handleSubmit} className="border bg-blue-50 px-8 pt-8 rounded-md flex flex-col mb-4">
