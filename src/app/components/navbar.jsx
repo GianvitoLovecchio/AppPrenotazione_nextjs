@@ -9,6 +9,8 @@ export default function Navbar({ initialUser }) {
   const [user] = useState(initialUser);
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log(user);
+
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
@@ -24,6 +26,10 @@ export default function Navbar({ initialUser }) {
         {user?.role === "owner" && (
           <BusinessDropdown user={user}/>
         )}
+        
+        {(!user.loggedIn || user?.role === "user") && 
+          <Link href="/business/businessIndex" className="hover:underline">Elenco attività</Link>
+        }
       </div>
 
       {/* --- Sezione destra --- */}
